@@ -53,10 +53,10 @@ jobs:
           ANDROID_NDK: ${{ steps.setup-ndk.outputs.ndk-path }}
           LLAMA_CPP_DIR: ${{ github.workspace }}/llama.cpp
           VULKAN_SDK: ${{ github.workspace }}/vulkan-sdk/${{ env.VULKAN_SDK_VERSION }}/x86_64
-        run: ./android-vulkan.sh
+        run: bash ./android-vulkan.sh
 
       - name: Package release zip
-        run: scripts/package-android-release.sh builds/android/build-android-vulkan dist llama-android-arm64-vulkan.zip
+        run: bash scripts/package-android-release.sh builds/android/build-android-vulkan dist llama-android-arm64-vulkan.zip
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
