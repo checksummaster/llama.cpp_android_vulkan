@@ -10,13 +10,14 @@ PACKAGE_NAME="${3:-llama-android-arm64-vulkan.zip}"
 
 BIN_DIR="$BUILD_DIR/bin"
 STAGE_DIR="$DIST_DIR/llama-android-arm64-vulkan"
+OUT_ZIP="$DIST_DIR/$PACKAGE_NAME"
 
 if [ ! -d "$BIN_DIR" ]; then
   echo "Missing build output directory: $BIN_DIR" >&2
   exit 1
 fi
 
-rm -rf "$STAGE_DIR" "$DIST_DIR/$PACKAGE_NAME"
+rm -rf "$STAGE_DIR" "$OUT_ZIP"
 mkdir -p "$STAGE_DIR" "$DIST_DIR"
 
 copy_binary() {
@@ -57,6 +58,6 @@ EOF
 
 chmod +x "$STAGE_DIR/llama-cli" "$STAGE_DIR/llama-server" "$STAGE_DIR/llama-server-cli"
 
-(cd "$STAGE_DIR" && zip -qr "$DIST_DIR/$PACKAGE_NAME" .)
+(cd "$STAGE_DIR" && zip -qr "$OUT_ZIP" .)
 
-echo "$DIST_DIR/$PACKAGE_NAME"
+echo "$OUT_ZIP"
