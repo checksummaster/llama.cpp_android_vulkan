@@ -1,0 +1,9 @@
+/builds/
+/dist/
+/android-ndk-r27d/
+/vulkan-sdk/
+/llama.cpp/
+*.zip
+*.tar.gz
+*.tar.xz
+*.log
