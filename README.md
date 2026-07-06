@@ -4,6 +4,14 @@ This repo packages an Android arm64 Vulkan build of `llama.cpp` for use on a pho
 
 ## Local build
 
+If you want a fresh checkout to self-bootstrap, run:
+
+```sh
+bash scripts/download-deps.sh
+```
+
+Then build:
+
 ```sh
 ./android-vulkan.sh
 ```

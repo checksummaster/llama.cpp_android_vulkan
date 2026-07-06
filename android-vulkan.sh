@@ -3,6 +3,12 @@
 # Get the absolute path of the directory where THIS script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if [ ! -x "$SCRIPT_DIR/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin/clang" ] \
+  || [ ! -x "$SCRIPT_DIR/vulkan-sdk/1.4.341.0/x86_64/bin/glslc" ] \
+  || [ ! -d "$SCRIPT_DIR/llama.cpp/.git" ]; then
+  bash "$SCRIPT_DIR/scripts/download-deps.sh"
+fi
+
 # 1. Set the absolute path to your downloaded Android NDK
 export ANDROID_NDK="${ANDROID_NDK:-$SCRIPT_DIR/android-ndk-r27d}"
 export PATH="$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
