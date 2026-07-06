@@ -8,6 +8,16 @@ BUILD_DIR="${1:-$ROOT_DIR/builds/android/build-android-vulkan}"
 DIST_DIR="${2:-$ROOT_DIR/dist}"
 PACKAGE_NAME="${3:-llama-android-arm64-vulkan.zip}"
 
+case "$BUILD_DIR" in
+  /*) ;;
+  *) BUILD_DIR="$ROOT_DIR/$BUILD_DIR" ;;
+esac
+
+case "$DIST_DIR" in
+  /*) ;;
+  *) DIST_DIR="$ROOT_DIR/$DIST_DIR" ;;
+esac
+
 BIN_DIR="$BUILD_DIR/bin"
 STAGE_DIR="$DIST_DIR/llama-android-arm64-vulkan"
 OUT_ZIP="$DIST_DIR/$PACKAGE_NAME"
