@@ -19,7 +19,7 @@ case "$DIST_DIR" in
 esac
 
 BIN_DIR="$BUILD_DIR/bin"
-STAGE_DIR="$DIST_DIR/llama-android-arm64-vulkan"
+STAGE_DIR="$DIST_DIR/llama-android-arm64-vulkan/builds/android/build-android-vulkan/bin"
 OUT_ZIP="$DIST_DIR/$PACKAGE_NAME"
 
 if [ ! -d "$BIN_DIR" ]; then
@@ -27,7 +27,7 @@ if [ ! -d "$BIN_DIR" ]; then
   exit 1
 fi
 
-rm -rf "$STAGE_DIR" "$OUT_ZIP"
+rm -rf "$DIST_DIR/llama-android-arm64-vulkan" "$OUT_ZIP"
 mkdir -p "$STAGE_DIR" "$DIST_DIR"
 
 copy_binary() {
@@ -68,6 +68,6 @@ EOF
 
 chmod +x "$STAGE_DIR/llama-cli" "$STAGE_DIR/llama-server" "$STAGE_DIR/llama-server-cli"
 
-(cd "$STAGE_DIR" && zip -qr "$OUT_ZIP" .)
+(cd "$DIST_DIR/llama-android-arm64-vulkan" && zip -qr "$OUT_ZIP" builds)
 
 echo "$OUT_ZIP"
