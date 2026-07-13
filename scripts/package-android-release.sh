@@ -19,12 +19,17 @@ case "$DIST_DIR" in
 esac
 
 BIN_DIR="$BUILD_DIR/bin"
-STAGE_DIR="$DIST_DIR/llama-android-arm64-vulkan/builds/android/build-android-vulkan/bin"
+STAGE_DIR="$DIST_DIR/llama-android-arm64-vulkan"
 OUT_ZIP="$DIST_DIR/$PACKAGE_NAME"
 
 if [ ! -d "$BIN_DIR" ]; then
   echo "Missing build output directory: $BIN_DIR" >&2
   exit 1
+fi
+
+has_shared_libs=0
+if [ -n "$(find "$BIN_DIR" -maxdepth 1 -type f -name '*.so' -print -quit)" ]; then
+  has_shared_libs=1
 fi
 
 rm -rf "$DIST_DIR/llama-android-arm64-vulkan" "$OUT_ZIP"
@@ -40,34 +45,16 @@ copy_binary() {
   cp -a "$src" "$dst"
 }
 
-copy_binary "$BIN_DIR/llama-cli" "$STAGE_DIR/llama-cli.bin"
-copy_binary "$BIN_DIR/llama-server" "$STAGE_DIR/llama-server.bin"
+if [ "$has_shared_libs" -eq 1 ]; then
+  echo "Android release package is static-only; shared libraries were found in $BIN_DIR" >&2
+  echo "Rebuild with static linking or package manually if you need dynamic dependencies." >&2
+  exit 1
+else
+  copy_binary "$BIN_DIR/llama-cli" "$STAGE_DIR/llama-cli"
+  copy_binary "$BIN_DIR/llama-server" "$STAGE_DIR/llama-server"
+  chmod +x "$STAGE_DIR/llama-cli" "$STAGE_DIR/llama-server"
+fi
 
-find "$BIN_DIR" -maxdepth 1 -type f -name '*.so' -exec cp -a {} "$STAGE_DIR/" \;
-
-cat > "$STAGE_DIR/llama-cli" <<'EOF'
-#!/bin/sh
-DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
-export LD_LIBRARY_PATH="$DIR:${LD_LIBRARY_PATH:-}"
-exec "$DIR/llama-cli.bin" "$@"
-EOF
-
-cat > "$STAGE_DIR/llama-server" <<'EOF'
-#!/bin/sh
-DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
-export LD_LIBRARY_PATH="$DIR:${LD_LIBRARY_PATH:-}"
-exec "$DIR/llama-server.bin" "$@"
-EOF
-
-cat > "$STAGE_DIR/llama-server-cli" <<'EOF'
-#!/bin/sh
-DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
-export LD_LIBRARY_PATH="$DIR:${LD_LIBRARY_PATH:-}"
-exec "$DIR/llama-server.bin" "$@"
-EOF
-
-chmod +x "$STAGE_DIR/llama-cli" "$STAGE_DIR/llama-server" "$STAGE_DIR/llama-server-cli"
-
-(cd "$DIST_DIR/llama-android-arm64-vulkan" && zip -qr "$OUT_ZIP" builds)
+(cd "$DIST_DIR" && zip -qr "$OUT_ZIP" "llama-android-arm64-vulkan")
 
 echo "$OUT_ZIP"

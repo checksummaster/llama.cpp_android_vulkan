@@ -24,8 +24,9 @@ jobs:
 
       - name: Install host tools
         run: |
+          sudo dpkg --add-architecture arm64
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build curl unzip zip git python3
+          sudo apt-get install -y cmake ninja-build curl unzip zip git python3 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libvulkan-dev:arm64
 
       - name: Install Android NDK
         id: setup-ndk
@@ -52,23 +53,39 @@ jobs:
         env:
           ANDROID_NDK: ${{ steps.setup-ndk.outputs.ndk-path }}
           LLAMA_CPP_DIR: ${{ github.workspace }}/llama.cpp
+          LLAMA_BUILD_UI: OFF
+          LLAMA_USE_PREBUILT_UI: OFF
           VULKAN_SDK: ${{ github.workspace }}/vulkan-sdk/${{ env.VULKAN_SDK_VERSION }}/x86_64
-        run: bash ./android-vulkan.sh
+        run: bash ./scripts/android-vulkan.sh
 
       - name: Package release zip
         run: bash scripts/package-android-release.sh builds/android/build-android-vulkan dist llama-android-arm64-vulkan.zip
 
+      - name: Build Linux ARM64 Vulkan binaries
+        env:
+          LLAMA_CPP_DIR: ${{ github.workspace }}/llama.cpp
+          LLAMA_BUILD_UI: OFF
+          LLAMA_USE_PREBUILT_UI: OFF
+          VULKAN_SDK: ${{ github.workspace }}/vulkan-sdk/${{ env.VULKAN_SDK_VERSION }}/x86_64
+          VULKAN_LIBRARY: /usr/lib/aarch64-linux-gnu/libvulkan.so
+        run: bash ./scripts/build-linux-aarch64-vulkan.sh
+
+      - name: Package Linux release zip
+        run: bash scripts/package-linux-release.sh builds/linux/build-linux-aarch64-vulkan dist llama-linux-arm64-vulkan.zip
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: llama-android-arm64-vulkan
-          path: dist/llama-android-arm64-vulkan.zip
+          name: llama-release-zips
+          path: |
+            dist/llama-android-arm64-vulkan.zip
+            dist/llama-linux-arm64-vulkan.zip
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" dist/llama-android-arm64-vulkan.zip \
+          gh release create "${GITHUB_REF_NAME}" dist/llama-android-arm64-vulkan.zip dist/llama-linux-arm64-vulkan.zip \
             --title "${GITHUB_REF_NAME}" \
-            --notes "Android arm64 Vulkan build for llama-cli and llama-server."
+            --notes "Android and Linux arm64 Vulkan builds for llama-cli and llama-server."
